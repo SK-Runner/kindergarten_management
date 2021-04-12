@@ -238,6 +238,13 @@ export default {
 
         }
     },
+    created(){
+        let role = JSON.parse(sessionStorage.getItem('userInfo')).roleid
+        console.log('role',role);
+        if(role==1 || role==2){
+            this.$router.replace('/dynamic')
+        }
+    },
     mounted(){
         // 加载全部数据
         let data = {

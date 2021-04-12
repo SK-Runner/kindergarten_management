@@ -51,7 +51,7 @@ export default {
                 'password':this.password
             }
             if(this.phone=='' || this.password==''){
-                console.log('登录的用户信息为：'+data);
+                console.log('登录的用户信息为：',data);
                 this.errmsg = '用户名或密码不能为空'
                 this.showmsg = true
             }
@@ -62,7 +62,7 @@ export default {
                 this.$refs.identifyCom.refreshCode()
             }
             else{
-                console.log('登录的用户信息为：'+data);
+                console.log('登录的用户信息为：',data);
                 console.log(this.identifyCode,'&&',this.tempData);
                 checkIdentify(data).then(res=>{
                     const validData = res.data;
