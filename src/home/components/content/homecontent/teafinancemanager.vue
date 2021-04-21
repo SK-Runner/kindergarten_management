@@ -94,7 +94,9 @@ export default {
                 refee: '退费金额',
                 fee: '应缴费用',
                 paydate: '缴费时间',
+                endate: '到期时间',
                 other: '缴费补充说明',
+                
             },
             dataList:[],
 

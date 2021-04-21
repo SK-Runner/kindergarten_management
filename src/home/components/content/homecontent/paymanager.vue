@@ -132,6 +132,9 @@
                     <el-form-item label="*缴费时间" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.paydate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
+                    <el-form-item label="*到期时间" :label-width="formLabelWidth">
+                        <el-input v-model="insertForm.endate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
+                    </el-form-item>
                     <el-form-item label="*缴费补充说明" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.other" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
@@ -199,6 +202,9 @@
                     <el-form-item label="*缴费时间" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.paydate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
+                    <el-form-item label="*到期时间" :label-width="formLabelWidth">
+                        <el-input v-model="updateForm.endate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
+                    </el-form-item>
                     <el-form-item label="*缴费补充说明" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.other" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
@@ -239,7 +245,9 @@ export default {
                 refee: '退费金额',
                 fee: '应缴费用',
                 paydate: '缴费时间',
+                endate: '到期时间',
                 other: '缴费补充说明',
+                
             },
             dataList:[],
 
@@ -269,6 +277,7 @@ export default {
                 absence:'0',
                 num:1,
                 paydate:'',
+                endate:'',
                 other:''
             },
 
@@ -285,6 +294,7 @@ export default {
                 absence:'0',
                 num:1,
                 paydate:'',
+                endate:'',
                 other:''
             },
 
@@ -385,7 +395,6 @@ export default {
             pagenum:this.currentPage1,
             pagesize:this.pagesize
         }
-        console.log('1111');
         queryallbill(data).then(res=>{
             let result = res.data
             console.log(res);
@@ -494,6 +503,7 @@ export default {
             this.updateForm.studentname = row.studentname
             this.updateForm.classid = row.classid
             this.updateForm.paydate = row.paydate
+            this.updateForm.endate = row.endate
             this.updateForm.other = row.other
             this.updateDialogFormVisible = true
         },
@@ -561,6 +571,7 @@ export default {
                 absence:parseInt(this.insertForm.absence),
                 num:parseInt(this.insertForm.num),
                 paydate:this.insertForm.paydate,
+                endate:this.insertForm.endate,
                 other:this.insertForm.other,
                 units:parseInt(this.insertUnits),
                 bookfee:parseInt(this.insertBookFee),
@@ -581,6 +592,7 @@ export default {
                     this.insertForm.absence = 0
                     this.insertForm.num = 1
                     this.insertForm.paydate = ''
+                    this.insertForm.endate = ''
                     this.insertForm.other = ''
                 }
                 else{
@@ -601,6 +613,7 @@ export default {
                 absence:parseInt(this.updateForm.absence),
                 num:parseInt(this.updateForm.num),
                 paydate:this.updateForm.paydate,
+                endate:this.updateForm.endate,
                 other:this.updateForm.other,
                 units:parseInt(this.updateUnits),
                 bookfee:parseInt(this.updateBookFee),
