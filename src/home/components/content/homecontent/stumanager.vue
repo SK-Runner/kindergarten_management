@@ -9,7 +9,14 @@
             <div class="condition">
                 <el-input v-model="username" placeholder="学生姓名" class="conditionitem"></el-input>
                 <el-input v-model="phone" placeholder="电话号码" class="conditionitem"></el-input>
-                <el-input v-model="classid" placeholder="班级ID" class="conditionitem"></el-input>
+                <el-autocomplete
+                    class="conditionitem"
+                    v-model="state1"
+                    :fetch-suggestions="querySearch"
+                    placeholder="班级名字"
+                    @select="handleSelect"
+                    >
+                </el-autocomplete>
                 <el-select placeholder="是否有效" class="conditionitem" v-model="userstatus">
                     <el-option
                     v-for="item in userstatusitem"
@@ -30,15 +37,17 @@
             <el-table
             :data="dataList"
             style="width: 100%">
-                <el-table-column
-                    v-for="(item,index) in dataColum"
-                    :key="index"
-                    :label="item"
-                    >
+                <el-table-column prop="userid" label="学生ID"></el-table-column>
+                <el-table-column prop="username" label="学生姓名"></el-table-column>
+                <el-table-column prop="classid" label="班级ID"></el-table-column>
+                <el-table-column prop="classname" label="班级名称"></el-table-column>
+                <el-table-column prop="userstatus" label="账号状态">
                     <template slot-scope="scope">
-                        {{scope.row[index]}}
+                        <span v-if="scope.row.userstatus=='0'">无效</span>
+                        <span v-if="scope.row.userstatus=='1'">有效</span>
                     </template>
                 </el-table-column>
+
                 <el-table-column
                     label="操作">
                     <template slot-scope="scope">
@@ -52,18 +61,6 @@
                     </template>
                 </el-table-column>
             </el-table>
-        </div>
-
-        <div class="instructionswords">
-            <el-alert
-                title="班级代码说明"
-                type="success"
-                description="1:甘露一班; 6:甘露二班; 2:晨曦一班; 7:晨曦二班; 3:朝希一班; 8:朝希二班;">
-            </el-alert>
-            <el-alert
-                title="账号状态代码说明【0：无效；1：有效】"
-                type="success">
-            </el-alert>
         </div>
 
         <div class="block">
@@ -93,9 +90,16 @@
                     <el-form-item label="电话号码" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.phone" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="班级ID" :label-width="formLabelWidth">
-                        <el-input v-model="insertForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
+                    <el-form-item label="班级名称" :label-width="formLabelWidth">
+                        <el-autocomplete
+                            style="width:300px;position:absolute;left:0"
+                            v-model="state2"
+                            :fetch-suggestions="insertSearch"
+                            @select="inserthandleSelect"
+                            >
+                        </el-autocomplete>
                     </el-form-item>
+
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="insertDialogFormVisible = false">取 消</el-button>
@@ -124,8 +128,14 @@
                     <el-form-item label="电话号码" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.phone" autocomplete="off" readonly  style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="班级ID" :label-width="formLabelWidth">
-                        <el-input v-model="updateForm.classid" autocomplete="off" readonly  style="width:300px;position:absolute;left:0"></el-input>
+                    <el-form-item label="班级名称" :label-width="formLabelWidth">
+                        <el-autocomplete
+                            style="width:300px;position:absolute;left:0"
+                            v-model="state3"
+                            :fetch-suggestions="updateSearch"
+                            @select="updatehandleSelect"
+                            >
+                        </el-autocomplete>
                     </el-form-item>
                     <el-form-item label="账号状态" :label-width="formLabelWidth">
                         <el-select v-model="updateForm.userstatus" placeholder="修改账号状态" style="position:absolute;left:0">
@@ -144,12 +154,13 @@
     </div>
 </template>
 <script>
-
 import{
 queryallstu,
 insertStudent,
 updateStudent,
-deleteStudent
+deleteStudent,
+queryAllClassName,
+queryClassById
 } from '../../../network/home'
 
 export default {
@@ -157,75 +168,6 @@ export default {
 
     data() {
         return {
-            tableData: [{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },{
-                userid: 6,
-                username: '天天',
-                phone: '13649842649',
-                classid: 1,
-                userstatus: 1,
-            },],
-
-            dataColum:{
-                userid: '学生ID',
-                username: '学生姓名',
-                phone: '联系方式',
-                classid: '所属班级',
-                userstatus: '账户状态',
-            },
             dataList:[],
 
             username: '',
@@ -271,10 +213,14 @@ export default {
                 userstatus: '',
             },
 
-
+            classes: [],
+            state1: '',
+            state2: '',
+            state3: '',
         }
     },
     mounted(){
+        this.classes = this.loadAll();
         // 加载全部数据
         let data = {
             pagenum:this.currentPage1,
@@ -294,12 +240,18 @@ export default {
         // },
         // 编辑事件——打开dialog
         handleEdit(index, row) {
-            this.updateForm.userid = row.userid,
-            this.updateForm.username = row.username,
-            this.updateForm.phone = row.phone,
-            this.updateForm.classid = row.classid,
-            this.updateForm.userstatus = row.userstatus
-            this.updateDialogFormVisible = true
+            queryClassById({
+                classid:row.classid
+            }).then(res=>{
+                this.state3 = res.data.classname
+                this.updateForm.userid = row.userid,
+                this.updateForm.username = row.username,
+                this.updateForm.phone = row.phone,
+                this.updateForm.classid = row.classid,
+                this.updateForm.userstatus = row.userstatus
+                this.updateDialogFormVisible = true
+            })
+
         },
         // 删除事件
         handleDelete(index, row) {
@@ -414,8 +366,76 @@ export default {
                     alert("修改失败")
                 }
             })
-        }
+        },
 
+      querySearch(queryString, cb) {
+        var classes = this.classes;
+        var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
+        // 调用 callback 返回建议列表的数据
+        cb(results);
+      },
+      insertSearch(queryString, cb) {
+        var classes = this.classes;
+        var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
+        // 调用 callback 返回建议列表的数据
+        cb(results);
+      },
+      updateSearch(queryString, cb) {
+        var classes = this.classes;
+        var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
+        // 调用 callback 返回建议列表的数据
+        cb(results);
+      },
+      createFilter(queryString) {
+        return (classes) => {
+          return (classes.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      insertCreateFilter(queryString) {
+        return (classes) => {
+          return (classes.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      updateCreateFilter(queryString) {
+        return (classes) => {
+          return (classes.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      loadAll() {
+        let data = [
+            {
+                value:'无限制',
+                id:''
+            }
+
+        ]
+        queryAllClassName().then(res=>{
+            console.log('班级名字',res.data);
+            let arr = res.data
+            arr.forEach(function(item){
+                let obj = {
+                    value:item.classname,
+                    id:item.classid
+                }
+                data.push(obj)
+            })
+        })
+        return data;
+      },
+      handleSelect(item) {
+        console.log(item);
+        this.classid = item.id
+      },
+      inserthandleSelect(item) {
+        console.log(item);
+        this.insertForm.classid = item.id
+      },
+      updatehandleSelect(item){
+        console.log(item);
+        if(item.id){
+            this.updateForm.classid = item.id
+        }
+      }
     }
 }
 </script>
@@ -467,12 +487,6 @@ export default {
     .conditionitem{
         margin-right: 18px;
         width: 120px;
-    }
-    .instructionswords{
-        position: absolute;
-        left: 0;
-        width: 28%;
-        display: inline-block;
     }
     .block{
         position: absolute;

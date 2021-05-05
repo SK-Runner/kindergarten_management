@@ -38,24 +38,13 @@
                         {{scope.row[index]}}
                     </template>
                 </el-table-column>
+                <el-table-column prop="paytype" label="缴费方式">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.paytype=='0'">学期</span>
+                        <span v-if="scope.row.paytype=='1'">月</span>
+                    </template>
+                </el-table-column>
             </el-table>
-        </div>
-
-        <div class="instructionswords">
-            <el-alert
-                title="班级代码说明"
-                type="success"
-                description="1:甘露一班; 6:甘露二班; 2:晨曦一班; 7:晨曦二班; 3:朝希一班; 8:朝希二班;">
-            </el-alert>
-            <el-alert
-                title="账号状态代码说明【0：无效；1：有效】"
-                type="success">
-            </el-alert>
-            <el-alert
-                title="缴费方式代码说明【0：按学期缴费；1：按月缴费】"
-                type="success">
-            </el-alert>
-
         </div>
 
         <div class="block">
@@ -84,9 +73,8 @@ export default {
                 payid: '缴费单号',
                 studentid: '学生ID',
                 studentname: '学生姓名',
-                classid: '所属班级',
+                classname: '所属班级',
                 payname: '缴费项目名称',
-                paytype: '缴费方式',
                 absence: '缺席天数',
                 units: '价格/(学期/月)',
                 num: '数量',
@@ -102,7 +90,7 @@ export default {
 
             studentid: '',
 
-            classid:1,
+            classid:'',
 
             payname: '',
 
@@ -205,7 +193,8 @@ export default {
             this.options[j].children[1].value = this.options[j].value.toString() + '-09' + ' ' + (this.options[j].value+1).toString() + '-02'
             this.options[j].children[1].label = '秋季'
         }
-
+        let userInfo = JSON.parse(window.sessionStorage.getItem('userInfo'));
+        this.classid=userInfo.classid   
         // 加载全部数据
         let data = {
             pagenum: this.currentPage1,
@@ -342,12 +331,6 @@ export default {
     .conditionitem{
         margin-right: 18px;
         width: 120px;
-    }
-    .instructionswords{
-        position: absolute;
-        left: 0;
-        width: 28%;
-        display: inline-block;
     }
     .block{
         position: absolute;

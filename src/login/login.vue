@@ -18,7 +18,7 @@
             </div>
             <p class="errormsg" v-show="showmsg">{{errmsg}}</p>
             <div class="btn" @click="userlogin">
-                <button class="login-btn">登录</button>
+                <button class="login-btn">{{text}}</button>
             </div>
 
         </div>
@@ -39,6 +39,7 @@ export default {
             'password':'',
             'identifyCode':'',
             'tempData':'',
+            'text':'登录'
         }
     },
     components:{
@@ -46,6 +47,7 @@ export default {
     },
     methods:{
         userlogin(){
+            this.text = '登陆中...'
             let data = {
                 'phone':this.phone,
                 'password':this.password
@@ -54,12 +56,14 @@ export default {
                 console.log('登录的用户信息为：',data);
                 this.errmsg = '用户名或密码不能为空'
                 this.showmsg = true
+                this.text = '登陆'
             }
             else if(this.identifyCode == '' || this.tempData!=this.identifyCode){
                 console.log(this.identifyCode,'&&',this.tempData);
                 this.errmsg = '验证码错误'
                 this.showmsg = true
                 this.$refs.identifyCom.refreshCode()
+                this.text = '登陆'
             }
             else{
                 console.log('登录的用户信息为：',data);
@@ -73,15 +77,18 @@ export default {
                         sessionStorage.setItem('userInfo',JSON.stringify(validData.data.user))
                         sessionStorage.setItem('token',JSON.stringify(validData.data.token))
                         sessionStorage.setItem('permissions',JSON.stringify(validData.data.permissions))
+                        this.text = '登陆'
                         alert('登录成功')
                         window.location.href='/home'
                     }
                     else{
+                        this.text = '登陆'
                         this.errmsg = '用户名或密码错误'
                         this.showmsg = true
                         this.password=''
                     }
                 }).catch(()=>{
+                    this.text = '登陆'
                     this.errmsg = '网络错误'
                     this.showmsg = true
                 })

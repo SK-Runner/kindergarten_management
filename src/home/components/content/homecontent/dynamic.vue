@@ -94,7 +94,7 @@ export default {
             dynaDialogImageUrl:'',
 
             text:'',
-            teachername:'王鑫',
+            teachername:JSON.parse(sessionStorage.getItem('userInfo')).username,
             classid:1,
             picStr:'',
             releasedate:'',

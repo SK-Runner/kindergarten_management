@@ -49,6 +49,41 @@ export function deleteClass(data){
     })
 }
 
+export function queryClassById(data){
+    return request({
+        url:'check/cla/queryClassById',
+        data:data,
+        headers:{
+            'content-type':'application/json'
+        },
+        method:'post',
+        
+    })
+}
+
+export function queryAllClassName(){
+    return request({
+        url:'check/cla/queryAllClassName',
+        headers:{
+            'content-type':'application/json'
+        },
+        method:'post',
+        
+    })
+}
+
+export function getstudent(data){
+    return request({
+        url:'check/cla/getstudent',
+        data:data,
+        headers:{
+            'content-type':'application/json'
+        },
+        method:'post',
+        
+    })
+}
+
 // ----------------学生管理----------------
 
 export function queryallstu(data){

@@ -28,6 +28,13 @@
                         {{scope.row[index]}}
                     </template>
                 </el-table-column>
+                <el-table-column prop="status" label="账号状态">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.status=='0'">待审批</span>
+                        <span v-if="scope.row.status=='1'">未同意</span>
+                        <span v-if="scope.row.status=='2'">已同意</span>
+                    </template>
+                </el-table-column>
                 <el-table-column
                     label="操作">
                     <template slot-scope="scope">
@@ -43,18 +50,6 @@
                     </template>
                 </el-table-column>
             </el-table>
-        </div>
-
-        <div class="instructionswords">
-            <el-alert
-                title="班级代码说明"
-                type="success"
-                description="1:甘露一班; 6:甘露二班; 2:晨曦一班; 7:晨曦二班; 3:朝希一班; 8:朝希二班;">
-            </el-alert>
-            <el-alert
-                title="假条状态代码说明【0：待审核；1：未审批；2：已审批】"
-                type="success">
-            </el-alert>
         </div>
 
         <div class="block">
@@ -156,16 +151,16 @@ export default {
                 absenteeismid: '请假单号',
                 studentid: '学生ID',
                 studentname: '学生姓名',
-                classid: '所属班级',
+                classid: '所属班级ID',
+                classname: '所属班级',
                 cause: '请假原因',
-                absendate: '请假时间',
-                status: '假条状态',
+                absendate: '请假时间'
             },
             dataList:[],
 
-            studentid: 6,
-            studentname: '天天',
-            classid:1,
+            studentid: '',
+            studentname: '',
+            classid:'',
 
             pagesize:5,
 
@@ -200,30 +195,26 @@ export default {
         }
     },
     mounted(){
-        // 动态设置学期起始和结束时间
-        // let now = new Date()
-        // for(let i = 3,j=0 ; i > -4 ; i--,j++){
-        //     this.options[j].value = now.getFullYear()+i
-        //     this.options[j].label = now.getFullYear()+i
-        //     this.options[j].children[0].value = (this.options[j].value).toString() + '-03' + ' ' + this.options[j].value.toString() + '-08'
-        //     this.options[j].children[0].label = '春季'
-        //     this.options[j].children[1].value = this.options[j].value.toString() + '-09' + ' ' + (this.options[j].value+1).toString() + '-02'
-        //     this.options[j].children[1].label = '秋季'
-        // }
-
+        let userInfo = JSON.parse(window.sessionStorage.getItem('userInfo'));
+        this.studentid=userInfo.userid
+        this.studentname= userInfo.username
+        this.classid=userInfo.classid
         // 加载全部数据
         let data = {
             pagenum:this.currentPage1,
             pagesize:this.pagesize,
             studentid:parseInt(this.studentid)
         }
-        queryLeave(data).then(res=>{
-            let result = res.data
-            console.log(res);
-            this.total = result.totalSize
-            this.dataList = result.content
-            console.log('加载全部：',this.dataList);
-        })
+        setTimeout(() => {
+            queryLeave(data).then(res=>{
+                let result = res.data
+                console.log(res);
+                this.total = result.totalSize
+                this.dataList = result.content
+                console.log('加载全部：',this.dataList);
+            })      
+        }, 500);
+
     },
     methods:{
         // handdle(row){
@@ -415,12 +406,6 @@ export default {
     .conditionitem{
         margin-right: 18px;
         width: 120px;
-    }
-    .instructionswords{
-        position: absolute;
-        left: 0;
-        width: 28%;
-        display: inline-block;
     }
     .block{
         position: absolute;

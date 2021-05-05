@@ -36,15 +36,22 @@
             <el-table
             :data="dataList"
             style="width: 100%">
-                <el-table-column
-                    v-for="(item,index) in dataColum"
-                    :key="index"
-                    :label="item"
-                    >
+                <el-table-column prop="classid" label="班级ID"></el-table-column>
+                <el-table-column prop="classname" label="班级名称"></el-table-column>
+                <el-table-column prop="classstatus" label="班级状态">
                     <template slot-scope="scope">
-                        {{scope.row[index]}}
+                        <span v-if="scope.row.classstatus=='0'">未开班</span>
+                        <span v-if="scope.row.classstatus=='1'">已开班</span>
                     </template>
                 </el-table-column>
+                <el-table-column prop="grade" label="所属年级">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.grade=='0'">小班</span>
+                        <span v-if="scope.row.grade=='1'">中班</span>
+                        <span v-if="scope.row.grade=='2'">大班</span>
+                    </template>
+                </el-table-column>
+
                 <el-table-column
                     label="操作">
                     <template slot-scope="scope">
@@ -58,17 +65,6 @@
                     </template>
                 </el-table-column>
             </el-table>
-        </div>
-
-        <div class="instructionswords">
-            <el-alert
-                title="年级代码说明【0：小班；1：中班；2：大班】"
-                type="success">
-            </el-alert>
-            <el-alert
-                title="开班状态代码说明【0：未开班；1：已开班】"
-                type="success">
-            </el-alert>
         </div>
 
         <div class="block">
@@ -241,8 +237,10 @@ export default {
     created(){
         let role = JSON.parse(sessionStorage.getItem('userInfo')).roleid
         console.log('role',role);
-        if(role==1 || role==2){
+        if(role==1){
             this.$router.replace('/dynamic')
+        }else if(role==2){
+            this.$router.replace('/studynamic')
         }
     },
     mounted(){
@@ -258,6 +256,39 @@ export default {
             this.dataList = data.content
             console.log('加载全部：',this.dataList);
         })
+    },
+    computed:{
+        classStatus(){
+            return function(item,index){
+                console.log(item,index);
+                let result = ''
+                if(index == 2){
+                    switch(item){
+                        case 0:
+                            result = "未开班"
+                            break;
+                        case 1:
+                            result = "已开班"
+                            break;
+                    }
+                }else if(index ==3){
+                    switch(item){
+                        case 0:
+                            result = "小班"
+                            break;
+                        case 1:
+                            result = "中班"
+                            break;
+                        case 2:
+                            result = "大班"
+                            break;
+                    }
+                }else{
+                    result = item
+                }
+                return result
+            }
+        }
     },
     methods:{
         // handdle(row){
@@ -428,12 +459,6 @@ export default {
     .conditionitem{
         margin-right: 18px;
         width: 120px;
-    }
-    .instructionswords{
-        position: absolute;
-        left: 0;
-        width: 25%;
-        display: inline-block;
     }
     .block{
         position: absolute;

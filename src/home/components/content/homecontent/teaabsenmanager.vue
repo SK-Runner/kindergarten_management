@@ -7,7 +7,14 @@
                 <span>请假记录表</span>
             </div>
             <div class="condition">
-                <el-input v-model="studentid" placeholder="学生ID" class="conditionitem"></el-input>
+                <el-autocomplete
+                    class="conditionitem"
+                    v-model="state2"
+                    :fetch-suggestions="querySearch"
+                    @select="HandleSelect"
+                    placeholder="学生姓名"
+                    >
+                </el-autocomplete>
                 <el-button class="conditionitem" @click="queryLeave">查询全部</el-button>
             </div>
             <div class="add-info">
@@ -29,6 +36,13 @@
                         {{scope.row[index]}}
                     </template>
                 </el-table-column>
+                <el-table-column prop="status" label="账号状态">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.status=='0'">待审批</span>
+                        <span v-if="scope.row.status=='1'">未同意</span>
+                        <span v-if="scope.row.status=='2'">已同意</span>
+                    </template>
+                </el-table-column>
                 <el-table-column
                     label="操作">
                     <template slot-scope="scope">
@@ -44,18 +58,6 @@
                     </template>
                 </el-table-column>
             </el-table>
-        </div>
-
-        <div class="instructionswords">
-            <el-alert
-                title="班级代码说明"
-                type="success"
-                description="1:甘露一班; 6:甘露二班; 2:晨曦一班; 7:晨曦二班; 3:朝希一班; 8:朝希二班;">
-            </el-alert>
-            <el-alert
-                title="假条状态代码说明【0：待审核；1：未审批；2：已审批】"
-                type="success">
-            </el-alert>
         </div>
 
         <div class="block">
@@ -78,14 +80,23 @@
             -->
             <el-dialog title="创建假条记录" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
                 <el-form :model="insertForm">
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
-                        <el-input v-model="insertForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;"></el-input>
-                    </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
-                        <el-input v-model="insertForm.studentname" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
-                    </el-form-item>
                     <el-form-item label="*班级ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
+                    </el-form-item>
+                    <el-form-item label="*班级名称" :label-width="formLabelWidth">
+                        <el-input v-model="classname" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
+                    </el-form-item>
+                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
+                        <el-autocomplete
+                            style="width:300px;position:absolute;left:0"
+                            v-model="state1"
+                            :fetch-suggestions="insertSearch"
+                            @select="insertHandleSelect"
+                            >
+                        </el-autocomplete>
+                    </el-form-item>
+                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
+                        <el-input v-model="insertForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;"></el-input>
                     </el-form-item>
                     <el-form-item label="*请假原因" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.cause" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
@@ -108,7 +119,9 @@ import {
     queryLeave,
     createLeave,
     permitLeave,
-    delLeave
+    delLeave,
+    queryClassById,
+    getstudent
 } from '../../../network/home'
 
 export default {
@@ -121,15 +134,17 @@ export default {
                 studentid: '学生ID',
                 studentname: '学生姓名',
                 classid: '所属班级',
+                classname: '所属班级',
                 cause: '请假原因',
                 absendate: '请假时间',
-                status: '假条状态',
             },
             dataList:[],
 
             studentid:'',
 
-            classid:1,
+            classid:'',
+
+            classname:'',
 
             pagesize:5,
 
@@ -147,33 +162,52 @@ export default {
                 cause: '',
                 absendate: '',
             },
+
+            studentList:[
+                {
+                    value:"无条件限制",
+                    id:''
+                }
+            ],
+            state1: '',
+            state2: '',
         }
     },
     mounted(){
-        // 动态设置学期起始和结束时间
-        // let now = new Date()
-        // for(let i = 3,j=0 ; i > -4 ; i--,j++){
-        //     this.options[j].value = now.getFullYear()+i
-        //     this.options[j].label = now.getFullYear()+i
-        //     this.options[j].children[0].value = (this.options[j].value).toString() + '-03' + ' ' + this.options[j].value.toString() + '-08'
-        //     this.options[j].children[0].label = '春季'
-        //     this.options[j].children[1].value = this.options[j].value.toString() + '-09' + ' ' + (this.options[j].value+1).toString() + '-02'
-        //     this.options[j].children[1].label = '秋季'
-        // }
-
+        let that = this
+        let userInfo = JSON.parse(window.sessionStorage.getItem('userInfo'));
+        this.classid=userInfo.classid   
         // 加载全部数据
         let data = {
             pagenum:this.currentPage1,
             pagesize:this.pagesize,
             classid:parseInt(this.classid)
         }
-        queryLeave(data).then(res=>{
-            let result = res.data
-            console.log(res);
-            this.total = result.totalSize
-            this.dataList = result.content
-            console.log('加载全部：',this.dataList);
+        setTimeout(() => {
+            queryLeave(data).then(res=>{
+                let result = res.data
+                console.log(res);
+                this.total = result.totalSize
+                this.dataList = result.content
+                console.log('加载全部：',this.dataList);
+            })         
+        }, 500);
+
+        getstudent({
+            classid:this.classid,
+            pagenum:1,
+            pagesize:100
+        }).then(res=>{
+            let arr = res.data.content
+            arr.forEach(function(item){
+                let obj = {
+                    value:item.username,
+                    id:item.userid
+                }
+                that.studentList.push(obj)
+            })
         })
+
     },
     methods:{
         // handdle(row){
@@ -250,16 +284,7 @@ export default {
             });
         },
 
-        // 获取学期开始时间和结束时间
-        // handleChange(value){
-        //     let timeArr = value[1].split(' ')
-        //     this.startime = timeArr[0]
-        //     this.endtime = timeArr[1]
-        //     console.log(this.startime);
-        //     console.log(this.endtime);
-        // },
-
-        // 条件查询缴费记录
+        // 条件查询缺席记录
         queryLeave(){
             let data = {
                 pagenum:this.currentPage1,
@@ -278,7 +303,14 @@ export default {
 
         // 打开新增dialog
         insertDialogFormVisibleControl(){
-            this.insertDialogFormVisible = true
+            let that = this
+            queryClassById({
+                classid:this.classid
+            }).then(res=>{
+                that.insertForm.classid = that.classid
+                that.classname = res.data.classname
+                that.insertDialogFormVisible = true
+            })
         },
 
         // 添加缴费记录方法
@@ -307,6 +339,32 @@ export default {
                 }
             })
         },
+
+        insertSearch(queryString, cb) {
+            var studentList = this.studentList;
+            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
+            // 调用 callback 返回建议列表的数据
+            cb(results);
+        },
+        createFilter(queryString) {
+            return (studentList) => {
+            return (studentList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+            };
+        },
+        insertHandleSelect(item) {
+            console.log(item);
+            this.insertForm.studentid = item.id
+        },
+        querySearch(queryString, cb) {
+            var studentList = this.studentList;
+            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
+            // 调用 callback 返回建议列表的数据
+            cb(results);
+        },
+        HandleSelect(item) {
+            console.log(item);
+            this.studentid = item.id
+        }
 
     }
 }
@@ -359,12 +417,6 @@ export default {
     .conditionitem{
         margin-right: 18px;
         width: 120px;
-    }
-    .instructionswords{
-        position: absolute;
-        left: 0;
-        width: 28%;
-        display: inline-block;
     }
     .block{
         position: absolute;

@@ -35,6 +35,12 @@
                 <el-form-item label="用户姓名" :label-width="formLabelWidth">
                 <el-input v-model="form.username" autocomplete="off" readonly></el-input>
                 </el-form-item>
+                <el-form-item 
+                    label="所属班级" 
+                    :label-width="formLabelWidth"
+                    v-if="roleid!=0">
+                <el-input v-model="classname" autocomplete="off" readonly></el-input>
+                </el-form-item>
                 <el-form-item label="新密码" :label-width="formLabelWidth">
                 <el-input v-model="form.password" autocomplete="off"></el-input>
                 </el-form-item>
@@ -54,7 +60,8 @@
 <script>
 import asidecontainer from './components/content/aside/asideContainer'
 import{
-    updatePwd
+    updatePwd,
+    queryClassById
 } from './network/home'
 export default {
     name:'home',
@@ -63,6 +70,9 @@ export default {
             editInfo:false,
             username:'',
             userid:0,
+            roleid:"",
+            classid:'',
+            classname:'',
             password:'',
             dialogFormVisible:false,
             formLabelWidth:'120px',
@@ -90,6 +100,8 @@ export default {
             this.username = JSON.parse(sessionStorage.getItem('userInfo')).username;
             this.userid = JSON.parse(sessionStorage.getItem('userInfo')).userid;
             this.password = JSON.parse(sessionStorage.getItem('userInfo')).password;
+            this.classid = JSON.parse(sessionStorage.getItem('userInfo')).classid;
+            this.roleid = JSON.parse(sessionStorage.getItem('userInfo')).roleid;
         }
 
         
@@ -101,9 +113,16 @@ export default {
         },
         
         openEditor(){
-            this.form.userid = this.userid
-            this.form.username = this.username
-            this.dialogFormVisible = true
+            queryClassById({
+                classid:this.classid
+            }).then(res=>{
+                console.log('queryClassById',res.data);
+                this.form.userid = this.userid
+                this.form.username = this.username
+                this.classname = res.data.classname
+                this.dialogFormVisible = true
+            })
+
         },
         logout(){
             sessionStorage.removeItem('userInfo')
