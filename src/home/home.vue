@@ -7,7 +7,7 @@
                 </div>
                 <div class="welcome">
                     <div class="username" @click="editInfoShow">欢迎您：{{this.username}}&nbsp;&nbsp;∨</div>
-                    <div class="logout" @click="logout">
+                    <div class="logout" @click="isLogOut">
                         <img src="~assets/logout.svg" alt="">
                         退出
                     </div>
@@ -132,22 +132,52 @@ export default {
             window.location.href = '/login'
         },
         ModifyPassword(){
-            if(this.form.password==this.form.confirmPwd){
-                let data = {
-                    userid:this.form.userid,
-                    password:this.form.password
-                }
-                updatePwd(data).then(res=>{
-                    if(res.data.code==200){
-                        this.$confirm('修改成功,请重新登陆！').then(() => {
-                            this.logout()
-                        })
+            if((this.form.password==this.form.confirmPwd)&&this.form.password){
+                this.$confirm('您确定修改登陆密码吗？', '提示', {
+                    confirmButtonText: '修改',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let data = {
+                        userid:this.form.userid,
+                        password:this.form.password
                     }
-                })
+                    updatePwd(data).then(res=>{
+                        if(res.data.code==200){
+                            this.$message({
+                                type: 'success',
+                                message: '修改成功,请重新登陆！',
+                                duration:2000
+                            });
+                            setTimeout(() => {
+                                this.logout()
+                            }, 2000);
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消修改'
+                    });      
+                });
             }
             else{
                 this.$message.error('两次密码输入不正确，请确认！');
             }
+        },
+        isLogOut(){
+            this.$confirm('您确定退出登录吗？', '提示', {
+                confirmButtonText: '退出登录',
+                cancelButtonText: '取消操作',
+                type: 'warning'
+            }).then(() => {
+                this.logout()
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '取消退出'
+                });      
+            });
         }
     }
 }
