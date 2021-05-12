@@ -7,7 +7,14 @@
                 <span>缴费记录表</span>
             </div>
             <div class="condition">
-                <el-input v-model="studentid" placeholder="学生ID" class="conditionitem"></el-input>
+                <el-autocomplete
+                    class="conditionitem"
+                    v-model="state6"
+                    :fetch-suggestions="studentQuerySearch"
+                    @select="studentHandleSelect"
+                    placeholder="学生姓名"
+                    >
+                </el-autocomplete>
                 <el-autocomplete
                     class="conditionitem"
                     v-model="state1"
@@ -267,7 +274,8 @@ import {
     updateBill,
     queryAllClassName,
     // queryClassById,
-    getstudent
+    getstudent,
+    queryallstu
 } from '../../../network/home'
 
 export default {
@@ -430,10 +438,18 @@ export default {
             state3: '',
             state4: '',
             state5: '',
+            state6: '',
             studentList:[],
+            studentList2:[
+                {
+                    value:"无条件限制",
+                    id:''
+                }
+            ],
         }
     },
     mounted(){
+        let that = this
         this.classes = this.loadAll();
         // 动态设置学期起始和结束时间
         let now = new Date()
@@ -460,6 +476,21 @@ export default {
                 console.log('加载全部：',this.dataList);
             })
         }, 500);
+
+        // 获取筛选条件中学生列表
+        queryallstu({
+            pagenum:1,
+            pagesize:1000
+        }).then(res=>{
+            let arr = res.data.content
+            arr.forEach(function(item){
+                let obj = {
+                    value:item.username,
+                    id:item.userid
+                }
+                that.studentList2.push(obj)
+            })
+        })
 
     },
     computed:{
@@ -713,6 +744,18 @@ export default {
             })
             return data;
         },
+
+        studentQuerySearch(queryString, cb){
+            var studentList = this.studentList2;
+            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
+            // 调用 callback 返回建议列表的数据
+            cb(results);
+        },
+        studentHandleSelect(item){
+            console.log(item);
+            this.studentid = item.id
+        },
+
 
         querySearch(queryString, cb) {
             var classes = this.classes;
