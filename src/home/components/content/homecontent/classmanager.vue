@@ -87,11 +87,11 @@
             增加班级的表单弹窗
         -->
             <el-dialog title="新增班级" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="insertForm">
-                    <el-form-item label="班级名称" :label-width="formLabelWidth">
+                <el-form :model="insertForm" :rules="insertRules" ref="insertForm">
+                    <el-form-item label="班级名称" :label-width="formLabelWidth" prop="classname">
                         <el-input v-model="insertForm.classname" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="所属年级" :label-width="formLabelWidth">
+                    <el-form-item label="所属年级" :label-width="formLabelWidth" prop="grade">
                         <!-- 
                             解决选择器偏移问题 position:absolute;left:0
                         -->
@@ -101,7 +101,7 @@
                             <el-option label="小班" value=0></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="开班状态" :label-width="formLabelWidth">
+                    <el-form-item label="开班状态" :label-width="formLabelWidth" prop="classstatus">
                         <el-select v-model="insertForm.classstatus" placeholder="选择开班状态" style="position:absolute;left:0">
                             <el-option label="已开班" value=1></el-option>
                             <el-option label="未开班" value=0></el-option>
@@ -221,6 +221,19 @@ export default {
                 grade: ''
             },
 
+            insertRules:{
+                classname:[
+                    { required: true, message: '请输入班级名称', trigger: 'blur' },
+                    { min: 2, max: 5, message: '班级名称在2到5个字符之间', trigger: 'blur' }
+                ],
+                classstatus:[
+                    { required: true, message: '请选择开班状态', trigger: 'blur' }
+                ],
+                grade:[
+                    { required: true, message: '请选择所属年级', trigger: 'blur' }
+                ],
+            },
+
             // 修改班级模态框显示状态，默认false
             updateDialogFormVisible:false,
 
@@ -298,7 +311,8 @@ export default {
         handleEdit(index, row) {
             this.updateForm.classid = row.classid
             this.updateForm.classname = row.classname
-            this.updateForm.classstatus = row.classstatus
+            this.updateForm.classstatus = row.classstatus.toString()
+            this.updateForm.grade = row.grade.toString()
             this.updateDialogFormVisible = true
         },
         // 删除事件
@@ -369,45 +383,61 @@ export default {
         },
         // 添加班级方法
         addClass(){
-            let data = {
-                classname:this.insertForm.classname,
-                classstatus:parseInt(this.insertForm.classstatus),
-                grade:parseInt(this.insertForm.grade)
-            }
-            insertClass(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("添加成功")
-                    this.insertDialogFormVisible = false
-                    this.queryClassByItems()
-                }
-                else{
-                    alert("添加失败")
+            this.$refs.insertForm.validate((valid) => {
+                if(valid){
+                    let data = {
+                        classname:this.insertForm.classname,
+                        classstatus:parseInt(this.insertForm.classstatus),
+                        grade:parseInt(this.insertForm.grade)
+                    }
+                    insertClass(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("添加成功")
+                            this.insertDialogFormVisible = false
+                            let empty = {
+                                classname: '',
+                                classstatus: '',
+                                grade: ''
+                            }
+                            Object.assign(this.insertForm,empty)
+                            this.queryClassByItems()
+                        }
+                        else{
+                            alert("添加失败")
+                        }
+                    })
+                }else{
+                    return false
                 }
             })
         },
         // 编辑班级方法
         modifyClass(){
-            let data = {
-                classid:parseInt(this.updateForm.classid),
-                classname:this.updateForm.classname,
-                classstatus:parseInt(this.updateForm.classstatus),
-                grade:parseInt(this.updateForm.grade)
-            }
-            updateClass(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("修改成功")
-                    this.updateDialogFormVisible = false
-                    this.queryClassByItems()
+            this.$confirm('您确定修改班级信息？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                let data = {
+                    classid:parseInt(this.updateForm.classid),
+                    classname:this.updateForm.classname,
+                    classstatus:parseInt(this.updateForm.classstatus),
+                    grade:parseInt(this.updateForm.grade)
                 }
-                else{
-                    alert("修改失败")
-                }
+                updateClass(data).then(res=>{
+                    let result = res.data
+                    if(result.code==200){
+                        alert("修改成功")
+                        this.updateDialogFormVisible = false
+                        this.queryClassByItems()
+                    }
+                    else{
+                        alert("修改失败")
+                    }
+                })
             })
         }
-
-
     }
 }
 </script>

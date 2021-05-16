@@ -28,7 +28,7 @@
         </el-container>
         <div>
             <el-dialog title="修改密码" :visible.sync="dialogFormVisible"  :modal-append-to-body="false">
-            <el-form :model="form">
+            <el-form :model="form" :rules="rules" ref="form">
                 <el-form-item label="用户ID" :label-width="formLabelWidth">
                 <el-input v-model="form.userid" autocomplete="off" readonly></el-input>
                 </el-form-item>
@@ -41,10 +41,10 @@
                     v-if="roleid!=0">
                 <el-input v-model="classname" autocomplete="off" readonly></el-input>
                 </el-form-item>
-                <el-form-item label="新密码" :label-width="formLabelWidth">
+                <el-form-item label="新密码" prop="password" :label-width="formLabelWidth">
                 <el-input v-model="form.password" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="确认密码" :label-width="formLabelWidth">
+                <el-form-item label="确认密码" prop="confirmPwd" :label-width="formLabelWidth">
                 <el-input v-model="form.confirmPwd" autocomplete="off"></el-input>
                 </el-form-item>
             </el-form>
@@ -66,6 +66,15 @@ import{
 export default {
     name:'home',
     data(){
+        let validatePass = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请再次输入密码'))
+            } else if (value !== this.form.password) {
+                callback(new Error('两次输入密码不一致!'))
+            } else {
+                callback()
+            }
+        }
         return {
             editInfo:false,
             username:'',
@@ -81,7 +90,16 @@ export default {
                 userid:0,
                 password:'',
                 confirmPwd:''
+            },
+            rules:{
+                password:[
+                    { required: true, message: '请输入密码', trigger: 'blur' }
+                ],
+                confirmPwd:[
+                    { required: true, validator: validatePass, trigger: 'blur' }
+                ]
             }
+
         }
     },
     components:{
@@ -103,9 +121,6 @@ export default {
             this.classid = JSON.parse(sessionStorage.getItem('userInfo')).classid;
             this.roleid = JSON.parse(sessionStorage.getItem('userInfo')).roleid;
         }
-
-        
- 
     },
     methods:{
         editInfoShow(){
@@ -132,38 +147,39 @@ export default {
             window.location.href = '/login'
         },
         ModifyPassword(){
-            if((this.form.password==this.form.confirmPwd)&&this.form.password){
-                this.$confirm('您确定修改登陆密码吗？', '提示', {
-                    confirmButtonText: '修改',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    let data = {
-                        userid:this.form.userid,
-                        password:this.form.password
-                    }
-                    updatePwd(data).then(res=>{
-                        if(res.data.code==200){
-                            this.$message({
-                                type: 'success',
-                                message: '修改成功,请重新登陆！',
-                                duration:2000
-                            });
-                            setTimeout(() => {
-                                this.logout()
-                            }, 2000);
+            this.$refs.form.validate((valid) => {
+                if (valid) {
+                    this.$confirm('您确定修改登陆密码吗？', '提示', {
+                        confirmButtonText: '修改',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        let data = {
+                            userid:this.form.userid,
+                            password:this.form.password
                         }
-                    })
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消修改'
-                    });      
-                });
-            }
-            else{
-                this.$message.error('两次密码输入不正确，请确认！');
-            }
+                        updatePwd(data).then(res=>{
+                            if(res.data.code==200){
+                                this.$message({
+                                    type: 'success',
+                                    message: '修改成功,请重新登陆！',
+                                    duration:2000
+                                });
+                                setTimeout(() => {
+                                    this.logout()
+                                }, 2000);
+                            }
+                        })
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消修改'
+                        });      
+                    });
+                } else {
+                    return false;
+                }
+            });
         },
         isLogOut(){
             this.$confirm('您确定退出登录吗？', '提示', {

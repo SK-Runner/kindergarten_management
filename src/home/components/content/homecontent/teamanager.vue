@@ -9,14 +9,18 @@
             <div class="condition">
                 <el-input v-model="username" placeholder="教师姓名" class="conditionitem"></el-input>
                 <el-input v-model="phone" placeholder="电话号码" class="conditionitem"></el-input>
-                <el-autocomplete
-                    class="conditionitem"
-                    v-model="state1"
-                    :fetch-suggestions="querySearch"
-                    placeholder="班级名字"
-                    @select="handleSelect"
-                    >
-                </el-autocomplete>
+                <el-select 
+                v-model="classid" 
+                placeholder="班级名称"
+                class="conditionitem">
+                    <el-option
+                        v-for="item in classes"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                        :disabled="item.disabled">
+                    </el-option>
+                </el-select>
                 <el-select placeholder="是否有效" class="conditionitem" v-model="userstatus">
                     <el-option
                     v-for="item in userstatusitem"
@@ -82,21 +86,27 @@
             增加班级的表单弹窗
         -->
             <el-dialog title="添加教师" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="insertForm">
-                    <el-form-item label="教师姓名" :label-width="formLabelWidth">
+                <el-form :model="insertForm" :rules="insertRules" ref="insertForm">
+                    <el-form-item label="教师姓名" :label-width="formLabelWidth" prop="username">
                         <el-input v-model="insertForm.username" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="电话号码" :label-width="formLabelWidth">
+                    <el-form-item label="电话号码" :label-width="formLabelWidth" prop="phone">
                         <el-input v-model="insertForm.phone" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="班级名称" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            style="width:300px;position:absolute;left:0"
-                            v-model="state2"
-                            :fetch-suggestions="insertSearch"
-                            @select="inserthandleSelect"
-                            >
-                        </el-autocomplete>
+                    <el-form-item label="班级名称" :label-width="formLabelWidth" prop="classid">
+                        <el-select 
+                        v-model="insertForm.classid" 
+                        placeholder="请选择班级名称"
+                        style="width:300px;position:absolute;left:0">
+                            <el-option
+                                v-for="item in classes"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled"
+                                v-show="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -127,13 +137,19 @@
                         <el-input v-model="updateForm.phone" autocomplete="off" readonly  style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
                     <el-form-item label="班级名称" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            style="width:300px;position:absolute;left:0"
-                            v-model="state3"
-                            :fetch-suggestions="updateSearch"
-                            @select="updatehandleSelect"
-                            >
-                        </el-autocomplete>
+                        <el-select 
+                        v-model="updateForm.classid" 
+                        placeholder="请选择班级名称"
+                        style="width:300px;position:absolute;left:0">
+                            <el-option
+                                v-for="item in classes"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled"
+                                v-show="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="账号状态" :label-width="formLabelWidth">
                         <el-select v-model="updateForm.userstatus" placeholder="修改账号状态" style="position:absolute;left:0">
@@ -166,6 +182,16 @@ export default {
     name:'teamanager',
 
     data() {
+        let validPhone = (rule, value, callback) =>{
+            let str = /^1[3-9]\d{9}$/
+            if(value==''){
+                return callback('请输入手机号')
+            } else if(!str.test(value)){
+                return callback('手机号格式不正确')
+            } else{
+                return callback()
+            }
+        }
         return {
             dataList:[],
 
@@ -199,6 +225,18 @@ export default {
                 username: '',
                 phone: '',
                 classid: ''
+            },
+
+            insertRules:{
+                username:[
+                    { required: true, message: '请输入教师姓名', trigger: 'blur' }
+                ],
+                phone:[
+                    { required: true, validator:validPhone, trigger: 'blur' }
+                ],
+                classid:[
+                    { required: true, message: '请选择班级名称', trigger: 'change' }
+                ],
             },
 
             // 修改班级模态框显示状态，默认false
@@ -243,11 +281,11 @@ export default {
                 classid:row.classid
             }).then(res=>{
                 this.state3 = res.data.classname
-                this.updateForm.userid = row.userid,
-                this.updateForm.username = row.username,
-                this.updateForm.phone = row.phone,
-                this.updateForm.classid = row.classid,
-                this.updateForm.userstatus = row.userstatus
+                this.updateForm.userid = row.userid
+                this.updateForm.username = row.username
+                this.updateForm.phone = row.phone
+                this.updateForm.classid = row.classid
+                this.updateForm.userstatus = row.userstatus.toString()
                 this.updateDialogFormVisible = true
             })
 
@@ -324,20 +362,26 @@ export default {
         },
         // 添加教师方法
         addTeacher(){
-            let data = {
-                username:this.insertForm.username,
-                classid:parseInt(this.insertForm.classid),
-                phone:this.insertForm.phone
-            }
-            insertTeacher(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("添加成功")
-                    this.insertDialogFormVisible = false
-                    this.queryTeaByItems()
-                }
-                else{
-                    alert("添加失败")
+            this.$refs.insertForm.validate((valid) => {
+                if(valid){
+                    let data = {
+                        username:this.insertForm.username,
+                        classid:parseInt(this.insertForm.classid),
+                        phone:this.insertForm.phone
+                    }
+                    insertTeacher(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("添加成功")
+                            this.insertDialogFormVisible = false
+                            this.queryTeaByItems()
+                        }
+                        else{
+                            alert("添加失败")
+                        }
+                    })
+                }else {
+                    return false;
                 }
             })
         },
@@ -399,18 +443,19 @@ export default {
       loadAll() {
         let data = [
             {
-                value:'无限制',
-                id:''
+                value:'',
+                label:'',
+                disabled:false
             }
-
         ]
         queryAllClassName().then(res=>{
             console.log('班级名字',res.data);
             let arr = res.data
             arr.forEach(function(item){
                 let obj = {
-                    value:item.classname,
-                    id:item.classid
+                    value:item.classid,
+                    label:item.classname,
+                    disabled:item.classstatus==1?false:true
                 }
                 data.push(obj)
             })
