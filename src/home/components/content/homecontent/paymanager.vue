@@ -7,22 +7,30 @@
                 <span>缴费记录表</span>
             </div>
             <div class="condition">
-                <el-autocomplete
-                    class="conditionitem"
-                    v-model="state6"
-                    :fetch-suggestions="studentQuerySearch"
-                    @select="studentHandleSelect"
-                    placeholder="学生姓名"
-                    >
-                </el-autocomplete>
-                <el-autocomplete
-                    class="conditionitem"
-                    v-model="state1"
-                    :fetch-suggestions="querySearch"
-                    placeholder="班级名字"
-                    @select="handleSelect"
-                    >
-                </el-autocomplete>
+                <el-select 
+                v-model="studentid"
+                placeholder="学生姓名" 
+                class="conditionitem">
+                    <el-option
+                        v-for="item in studentList2"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                        :disabled="item.disabled">
+                    </el-option>
+                </el-select>
+                <el-select 
+                v-model="classid" 
+                placeholder="请选择班级"
+                class="conditionitem">
+                    <el-option
+                        v-for="item in classes"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                        :disabled="item.disabled">
+                    </el-option>
+                </el-select>
                 <el-select v-model="payname" placeholder="缴费名称" class="conditionitem">
                     <el-option label="保教费" value="保教费"></el-option>
                     <el-option label="生活费" value="生活费"></el-option>
@@ -92,51 +100,60 @@
                 :modal-append-to-body="false"
             -->
             <el-dialog title="添加缴费记录" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="insertForm">
-                    <el-form-item label="*班级名称" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            class="conditionitem"
-                            v-model="state2"
-                            :fetch-suggestions="insertSearch"
-                            placeholder="请选择"
-                            @select="insertHandleSelect"
-                            style="width:300px;position:absolute;left:0"
-                            >
-                        </el-autocomplete>
+                <el-form :model="insertForm" :rules="insertRules" ref="insertForm">
+                    <el-form-item label="班级名称" :label-width="formLabelWidth" prop="classid">
+                        <el-select 
+                        v-model="insertForm.classid" 
+                        placeholder="请选择班级"
+                        style="width:300px;position:absolute;left:0;">
+                            <el-option
+                                v-for="item in classes"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled"
+                                v-show="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="*班级ID" :label-width="formLabelWidth">
+                    <el-form-item label="班级ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            class="conditionitem"
-                            v-model="state3"
-                            :fetch-suggestions="insertStudentSearch"
-                            placeholder="请选择"
-                            @select="insertStudentHandleSelect"
-                            style="width:300px;position:absolute;left:0"
-                            >
-                        </el-autocomplete>
+                    <el-form-item label="学生姓名" :label-width="formLabelWidth" prop="studentid">
+                        <el-select 
+                        :disabled="studentList.length==0"
+                        v-model="valueTest"
+                        @change="studentChange"
+                        placeholder="请选择学生" 
+                        style="width:300px;position:absolute;left:0;">
+                            <el-option
+                                v-for="item in studentList"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="{value:item.value,name:item.label}"
+                                :disabled="item.disabled">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
+                    <el-form-item label="学生ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*起始时间" :label-width="formLabelWidth">
+                    <el-form-item label="起始时间" :label-width="formLabelWidth" prop="startdate">
                         <el-input v-model="insertForm.startdate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date" @input="queryAbsence"></el-input>
                     </el-form-item>
-                    <el-form-item label="*到期时间" :label-width="formLabelWidth">
+                    <el-form-item label="到期时间" :label-width="formLabelWidth" prop="endate">
                         <el-input v-model="insertForm.endate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date" @input="queryAbsence"></el-input>
                     </el-form-item>
-                    <el-form-item label="*缺席天数" :label-width="formLabelWidth">
+                    <el-form-item label="缺席天数" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.absence" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费项目名称" :label-width="formLabelWidth">
+                    <el-form-item label="缴费项目名称" :label-width="formLabelWidth" prop="payname">
                         <el-select v-model="insertForm.payname" placeholder="选择缴费名称" style="position:absolute;left:0">
                             <el-option label="保教费" value="保教费"></el-option>
                             <el-option label="生活费" value="生活费"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="*缴费方式" :label-width="formLabelWidth">
+                    <el-form-item label="缴费方式" :label-width="formLabelWidth" prop="paytype">
                         <el-select v-model="insertForm.paytype" placeholder="选择缴费方式" style="position:absolute;left:0">
                             <el-option label="按学期缴费" value="0"></el-option>
                             <el-option label="按月缴费" value="1"></el-option>
@@ -145,7 +162,7 @@
                     <el-form-item label="价格/(学期/月)" :label-width="formLabelWidth">
                         <el-input v-model="insertUnits" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*数量" :label-width="formLabelWidth">
+                    <el-form-item label="数量" :label-width="formLabelWidth" prop="num">
                         <el-input v-model="insertForm.num" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
                     <el-form-item label="书本费" :label-width="formLabelWidth">
@@ -157,10 +174,10 @@
                     <el-form-item label="应缴费用" :label-width="formLabelWidth">
                         <el-input v-model="insertFee" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费时间" :label-width="formLabelWidth">
+                    <el-form-item label="缴费时间" :label-width="formLabelWidth" prop="paydate">
                         <el-input v-model="insertForm.paydate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费补充说明" :label-width="formLabelWidth">
+                    <el-form-item label="缴费补充说明" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.other" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
 
@@ -181,54 +198,63 @@
             :modal-append-to-body="false"
         -->
             <el-dialog title="更新收费信息" :visible.sync="updateDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="updateForm">
+                <el-form :model="updateForm" :rules="updateRules" ref="updateRules">
                     <el-form-item label="账单编号" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.payid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*班级名称" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            class="conditionitem"
-                            v-model="state4"
-                            :fetch-suggestions="updateSearch"
-                            placeholder="请选择"
-                            @select="updateHandleSelect"
-                            style="width:300px;position:absolute;left:0"
-                            >
-                        </el-autocomplete>
+                    <el-form-item label="班级名称" :label-width="formLabelWidth" prop="classid">
+                        <el-select 
+                        v-model="updateForm.classid" 
+                        placeholder="请选择班级"
+                        style="width:300px;position:absolute;left:0;">
+                            <el-option
+                                v-for="item in classes"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled"
+                                v-show="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="*班级ID" :label-width="formLabelWidth">
-                        <el-input v-model="updateForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
+                    <el-form-item label="班级ID" :label-width="formLabelWidth">
+                        <el-input v-model="updateForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            class="conditionitem"
-                            v-model="state5"
-                            :fetch-suggestions="updateStudentSearch"
-                            placeholder="请选择"
-                            @select="updateStudentHandleSelect"
-                            style="width:300px;position:absolute;left:0"
-                            >
-                        </el-autocomplete>
+                    <el-form-item label="学生姓名" :label-width="formLabelWidth" prop="studentid">
+                        <el-select 
+                        :disabled="studentList.length==0"
+                        v-model="valueTest2"
+                        @change="studentUpdate"
+                        placeholder="请选择学生" 
+                        style="width:300px;position:absolute;left:0;">
+                            <el-option
+                                v-for="item in studentList"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="{value:item.value,name:item.label}"
+                                :disabled="item.disabled">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
+                    <el-form-item label="学生ID" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*起始时间" :label-width="formLabelWidth">
+                    <el-form-item label="起始时间" :label-width="formLabelWidth" prop="startdate">
                         <el-input v-model="updateForm.startdate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date" @input="queryAbsence"></el-input>
                     </el-form-item>
-                    <el-form-item label="*到期时间" :label-width="formLabelWidth">
+                    <el-form-item label="到期时间" :label-width="formLabelWidth" prop="endate">
                         <el-input v-model="updateForm.endate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date" @input="queryAbsence"></el-input>
                     </el-form-item>
-                    <el-form-item label="*缺席天数" :label-width="formLabelWidth">
+                    <el-form-item label="缺席天数" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.absence" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费项目名称" :label-width="formLabelWidth">
+                    <el-form-item label="缴费项目名称" :label-width="formLabelWidth" prop="payname">
                         <el-select v-model="updateForm.payname" placeholder="选择缴费名称" style="position:absolute;left:0">
                             <el-option label="保教费" value="保教费"></el-option>
                             <el-option label="生活费" value="生活费"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="*缴费方式" :label-width="formLabelWidth">
+                    <el-form-item label="缴费方式" :label-width="formLabelWidth" prop="paytype">
                         <el-select v-model="updateForm.paytype" placeholder="选择缴费方式" style="position:absolute;left:0">
                             <el-option label="按学期缴费" value="0"></el-option>
                             <el-option label="按月缴费" value="1"></el-option>
@@ -237,7 +263,7 @@
                     <el-form-item label="价格/(学期/月)" :label-width="formLabelWidth">
                         <el-input v-model="updateUnits" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*数量" :label-width="formLabelWidth">
+                    <el-form-item label="数量" :label-width="formLabelWidth" prop="num">
                         <el-input v-model="updateForm.num" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
                     <el-form-item label="书本费" :label-width="formLabelWidth">
@@ -249,10 +275,10 @@
                     <el-form-item label="应缴费用" :label-width="formLabelWidth">
                         <el-input v-model="updateFee" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费时间" :label-width="formLabelWidth">
+                    <el-form-item label="缴费时间" :label-width="formLabelWidth" prop="paydate">
                         <el-input v-model="updateForm.paydate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
-                    <el-form-item label="*缴费补充说明" :label-width="formLabelWidth">
+                    <el-form-item label="缴费补充说明" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.other" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
                 </el-form>
@@ -266,7 +292,6 @@
     </div>
 </template>
 <script>
-
 import {
     queryLeave,
     queryallbill,
@@ -282,6 +307,56 @@ export default {
     name:'paymanager',
 
     data() {
+        let startDateCondition = (rule, value, callback)=>{
+            if(value==''){
+                return callback('起始时间不能为空')
+            } else if(value>this.insertForm.endate){
+                return callback('起始时间不能晚于到期时间')
+            } else{
+                return callback()
+            }
+        }
+        let updateStartDateCondition = (rule, value, callback)=>{
+            if(value==''){
+                return callback('起始时间不能为空')
+            } else if(value>this.updateForm.endate){
+                return callback('起始时间不能晚于到期时间')
+            } else{
+                return callback()
+            }
+        }
+        let endateCondition = (rule, value, callback)=>{
+            if(value==''){
+                return callback('起始时间不能为空')
+            } else if(value<this.insertForm.startdate){
+                return callback('到期时间不能早于到期时间')
+            } else{
+                return callback()
+            }
+        }
+        let updateEndateCondition = (rule, value, callback)=>{
+            if(value==''){
+                return callback('起始时间不能为空')
+            } else if(value<this.updateForm.startdate){
+                return callback('到期时间不能早于到期时间')
+            } else{
+                return callback()
+            }
+        }
+        let numCondition = (rule, value, callback)=>{
+            let str = /^[0-9]{1,}$/
+            if(value==''){
+                return callback('数量不能为空')
+            }else if(!str.test(value)){
+                return callback('必须输入数字')
+            }else if(value<1){
+                return callback('数量至少为1')
+            }else if(value>4){
+                return callback('数量至多为4')
+            }else{
+                return callback()
+            }
+        }
         return {
             dataColum:{
                 payid: '缴费单号',
@@ -289,7 +364,6 @@ export default {
                 studentname: '学生姓名',
                 classname: '所属班级',
                 payname: '缴费项目名称',
-                // paytype: '缴费方式',
                 absence: '缺席天数',
                 units: '价格/(学期/月)',
                 num: '数量',
@@ -321,6 +395,7 @@ export default {
             // 增加班级模态框显示状态，默认false
             insertDialogFormVisible:false,
 
+            valueTest:{},
             insertForm: {
                 studentid: '',
                 studentname: '',
@@ -335,9 +410,37 @@ export default {
                 other:''
             },
 
+            insertRules:{
+                studentid:[
+                    { required: true, message: '学生姓名不能为空', trigger: 'change' }
+                ],
+                classid:[
+                    { required: true, message: '班级名称不能为空', trigger: 'change' }
+                ],
+                payname:[
+                    { required: true, message: '缴费名称不能为空', trigger: 'change' }
+                ],
+                paytype:[
+                    { required: true, message: '缴费类型不能为空', trigger: 'change' }
+                ],
+                paydate:[
+                    { required: true, message: '缴费时间不能为空', trigger: 'change' }
+                ],
+                startdate:[
+                    { required: true, validator:startDateCondition, trigger: 'change' }
+                ],
+                endate:[
+                    { required: true, validator:endateCondition, trigger: 'change' }
+                ],
+                num:[
+                    { required: true, validator: numCondition, trigger: 'change' }
+                ]
+            }, 
+
             // 修改缴费信息模态框显示状态，默认false
             updateDialogFormVisible:false,
 
+            valueTest2:{},
             updateForm: {
                 payid:'',
                 studentid: '',
@@ -352,6 +455,32 @@ export default {
                 endate:'',
                 other:''
             },
+            updateRules:{
+                studentid:[
+                    { required: true, message: '学生姓名不能为空', trigger: 'change' }
+                ],
+                classid:[
+                    { required: true, message: '班级名称不能为空', trigger: 'change' }
+                ],
+                payname:[
+                    { required: true, message: '缴费名称不能为空', trigger: 'change' }
+                ],
+                paytype:[
+                    { required: true, message: '缴费类型不能为空', trigger: 'change' }
+                ],
+                paydate:[
+                    { required: true, message: '缴费时间不能为空', trigger: 'change' }
+                ],
+                startdate:[
+                    { required: true, validator:updateStartDateCondition, trigger: ['blur', 'change'] }
+                ],
+                endate:[
+                    { required: true, validator:updateEndateCondition, trigger: ['blur', 'change'] }
+                ],
+                num:[
+                    { required: true, validator: numCondition, trigger: 'change' }
+                ]
+            }, 
 
             // 学期的联级选择器数据
             value: [],
@@ -432,20 +561,27 @@ export default {
             // 显示收费标准
             showTip: false,
 
-            classes: [],
+            classes: [
+                {
+                    value:"",
+                    label:'',
+                    disabled:false
+                }
+            ],
             state1: '',
             state2: '',
             state3: '',
             state4: '',
             state5: '',
             state6: '',
-            studentList:[],
+            studentList:[], //增加缴费记录的学生列表
             studentList2:[
                 {
-                    value:"无条件限制",
-                    id:''
+                    value:"",
+                    label:'',
+                    disabled:false
                 }
-            ],
+            ],//搜索缴费记录的学生列表
         }
     },
     mounted(){
@@ -475,7 +611,7 @@ export default {
                 this.dataList = result.content
                 console.log('加载全部：',this.dataList);
             })
-        }, 500);
+        }, 100);
 
         // 获取筛选条件中学生列表
         queryallstu({
@@ -485,8 +621,9 @@ export default {
             let arr = res.data.content
             arr.forEach(function(item){
                 let obj = {
-                    value:item.username,
-                    id:item.userid
+                    value:item.userid,
+                    label:item.username,
+                    disabled:item.userstatus==1?false:true
                 }
                 that.studentList2.push(obj)
             })
@@ -578,6 +715,26 @@ export default {
             return result
         }
     },
+    watch:{
+        'insertForm.classid':function () { 
+            this.insertForm.studentid = ''
+            this.insertForm.studentname = ''
+            this.studentList = this.getStudentFun('insert')
+        },
+        'updateForm.classid':function(old,newValue){
+            console.log(old);
+            console.log(newValue);
+
+            if(newValue==''){
+                this.studentList = this.getStudentFun('update')
+            }else {
+                this.updateForm.studentid = ''
+                this.updateForm.studentname = ''
+                this.valueTest2 = {}
+                this.studentList = this.getStudentFun('update')
+            }
+        }
+    },
     methods:{
         // handdle(row){
         //     console.log(row);
@@ -588,26 +745,18 @@ export default {
             this.updateForm.absence = row.absence
             this.updateForm.num = row.num
             this.updateForm.payname = row.payname
-            this.updateForm.paytype = row.paytype
-            // this.updateForm.studentid = row.studentid
-            // this.updateForm.studentname = row.studentname
-            // this.updateForm.classid = row.classid
+            this.updateForm.paytype = row.paytype.toString()
+            this.updateForm.classid = row.classid
+            this.updateForm.studentid = row.studentid
+            this.updateForm.studentname = row.studentname
             this.updateForm.paydate = row.paydate
             this.updateForm.startdate = row.startdate
             this.updateForm.endate = row.endate
             this.updateForm.other = row.other
-            this.state4 = row.classname
-            this.state5 = row.studentname
-            let item1 = {
-                id: row.classid,
-                value: row.classname
+            this.valueTest2 = {
+                value:row.studentid,
+                name:row.studentname
             }
-            let item2 = {
-                id: row.studentid,
-                value: row.studentname
-            }
-            this.updateHandleSelect(item1)
-            this.updateStudentHandleSelect(item2)
             this.updateDialogFormVisible = true
         },
         handleCurrentChange(index){
@@ -665,56 +814,70 @@ export default {
 
         // 添加缴费记录方法
         addBill(){
-            let data = {
-                units:parseInt(this.insertUnits),
-                bookfee:parseInt(this.insertBookFee),
-                refee:parseInt(this.insertBookFee),
-                fee:parseInt(this.insertFee)
-            }
-            Object.assign(data,this.insertForm)
-            insertBill(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("添加成功")
-                    this.insertDialogFormVisible = false
-                    this.queryBillByItems()
-                    this.insertForm.studentid = ''
-                    this.insertForm.studentname = ''
-                    this.insertForm.classid = ''
-                    this.insertForm.payname = ''
-                    this.insertForm.paytype = ''
-                    this.insertForm.absence = 0
-                    this.insertForm.num = 1
-                    this.insertForm.paydate = ''
-                    this.insertForm.endate = ''
-                    this.insertForm.other = ''
-                }
-                else{
-                    alert("添加失败")
+            this.$refs.insertForm.validate((valid) => {
+                if(valid){
+                    let data = {
+                        units:parseInt(this.insertUnits),
+                        bookfee:parseInt(this.insertBookFee),
+                        refee:parseInt(this.insertBookFee),
+                        fee:parseInt(this.insertFee)
+                    }
+                    Object.assign(data,this.insertForm)
+                    insertBill(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("添加成功")
+                            this.insertDialogFormVisible = false
+                            this.queryBillByItems()
+                            this.insertForm.studentid = ''
+                            this.insertForm.studentname = ''
+                            this.insertForm.classid = ''
+                            this.insertForm.payname = ''
+                            this.insertForm.paytype = ''
+                            this.insertForm.absence = 0
+                            this.insertForm.num = 1
+                            this.insertForm.paydate = ''
+                            this.insertForm.endate = ''
+                            this.insertForm.other = ''
+                            this.valueTest = {}
+                        }
+                        else{
+                            alert("添加失败")
+                        }
+                    })
+                }else {
+                    return false
                 }
             })
         },
 
-        // 编辑教师信息方法
+        // 编辑信息方法
         modifyBill(){
-            let data = {
-                units:parseInt(this.updateUnits),
-                bookfee:parseInt(this.updateBookFee),
-                refee:parseInt(this.updateBookFee),
-                fee:parseInt(this.updateFee)
-            }
-            Object.assign(data,this.updateForm)
-            updateBill(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("修改成功")
-                    this.updateDialogFormVisible = false
-                    this.queryBillByItems()
-                }
-                else{
-                    alert("修改失败")
+            this.$refs.updateRules.validate((valid) => {
+                if(valid){
+                    let data = {
+                        units:parseInt(this.updateUnits),
+                        bookfee:parseInt(this.updateBookFee),
+                        refee:parseInt(this.updateBookFee),
+                        fee:parseInt(this.updateFee)
+                    }
+                    Object.assign(data,this.updateForm)
+                    updateBill(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("修改成功")
+                            this.updateDialogFormVisible = false
+                            this.queryBillByItems()
+                        }
+                        else{
+                            alert("修改失败")
+                        }
+                    })
+                }else {
+                    return false
                 }
             })
+
         },
 
         createFilter(queryString) {
@@ -724,25 +887,38 @@ export default {
         },
 
         loadAll() {
-            let data = [
-                {
-                    value:'无限制',
-                    id:''
+        let data = [
+            {
+                value:'',
+                label:'',
+                disabled:false
+            }
+        ]
+        queryAllClassName().then(res=>{
+            console.log('班级名字',res.data);
+            let arr = res.data
+            arr.forEach(function(item){
+                let obj = {
+                    value:item.classid,
+                    label:item.classname,
+                    disabled:item.classstatus==1?false:true
                 }
-
-            ]
-            queryAllClassName().then(res=>{
-                console.log('班级名字',res.data);
-                let arr = res.data
-                arr.forEach(function(item){
-                    let obj = {
-                        value:item.classname,
-                        id:item.classid
-                    }
-                    data.push(obj)
-                })
+                data.push(obj)
             })
-            return data;
+        })
+        return data;
+        },
+
+        studentChange(param){
+            console.log('学生列表变化的value',param);
+            this.insertForm.studentid = param.value
+            this.insertForm.studentname = param.name
+        },
+
+        studentUpdate(param){
+            console.log('学生列表变化的value',param);
+            this.updateForm.studentid = param.value
+            this.updateForm.studentname = param.name
         },
 
         studentQuerySearch(queryString, cb){
@@ -755,8 +931,6 @@ export default {
             console.log(item);
             this.studentid = item.id
         },
-
-
         querySearch(queryString, cb) {
             var classes = this.classes;
             var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
@@ -818,8 +992,8 @@ export default {
 
         getStudentFun(type){
             let that = this
-            that.studentList = []
             let classid = ''
+            let data = []
             if(type == 'insert'){
                 classid = parseInt(that.insertForm.classid)
             }else{
@@ -831,14 +1005,18 @@ export default {
                 pagesize:100
             }).then(res=>{
                 let arr = res.data.content
+                console.log(res.data.content);
                 arr.forEach(function(item){
                     let obj = {
-                        value:item.username,
-                        id:item.userid
+                        value:item.userid,
+                        label:item.username,
+                        disabled:item.userstatus==1?false:true
                     }
-                    that.studentList.push(obj)
+                    data.push(obj)
                 })
             })
+            console.log('data',data);
+            return data
         },
 
         queryAbsence(type){
