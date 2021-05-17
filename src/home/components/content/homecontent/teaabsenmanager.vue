@@ -40,24 +40,19 @@
                         {{scope.row[index]}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="status" label="账号状态">
+                <el-table-column prop="status" label="账号状态" min-width>
                     <template slot-scope="scope">
                         <span v-if="scope.row.status=='0'">待审批</span>
                         <span v-if="scope.row.status=='1'">未同意</span>
                         <span v-if="scope.row.status=='2'">已同意</span>
                     </template>
                 </el-table-column>
-                <el-table-column
-                    label="操作">
+                <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button
                         size="mini"
-                        @click="handleEdit(scope.$index, scope.row, '2')" v-show="scope.row.status==0"
+                        @click="handleEdit(scope.$index, scope.row)" v-show="scope.row.status==0"
                         style="margin-right: 10px">批准</el-button>
-                        <el-button
-                        size="mini"
-                        @click="handleEdit(scope.$index, scope.row, '1')" v-show="scope.row.status==0"
-                        style="margin-right: 10px">拒绝</el-button>
                         <el-button
                         size="mini"
                         type="danger"
@@ -161,7 +156,7 @@ export default {
 
             classname:'',
 
-            pagesize:5,
+            pagesize:10,
 
             total:0,
 
@@ -239,31 +234,41 @@ export default {
         //     console.log(row);
         // },
         // 编辑事件——打开dialog
-        handleEdit(index, row, status) {
+        handleEdit(index, row) {
             console.log(row.absenteeismid);
-            let data = { 
-                absenteeismid:parseInt(row.absenteeismid),
-                status
-            }
-            this.$confirm('此操作将修改该记录, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm('请批阅该条记录', '提示', {
+                distinguishCancelAndClose: true,
+                confirmButtonText: '同意',
+                cancelButtonText: '拒绝',
                 type: 'warning'
             }).then(() => {
-                permitLeave(data).then(res=>{
+                permitLeave({ 
+                absenteeismid:parseInt(row.absenteeismid),
+                status:'2'
+                }).then(res=>{
                     if(res.data.code==200){
                         this.$message({
                             type: 'success',
-                            message: '修改成功!'
+                            message: '审批成功!'
                         });
                         this.queryLeave()
                     }
                 })
-            }).catch(() => {
-                this.$message({
-                    type: 'info',
-                    message: '已取消修改'
-                });
+            }).catch((action) => {
+                if(action === 'cancel'){
+                    permitLeave({ 
+                        absenteeismid:parseInt(row.absenteeismid),
+                        status:'1'
+                    }).then(res=>{
+                        if(res.data.code==200){
+                            this.$message({
+                                type: 'success',
+                                message: '审批成功!'
+                            });
+                            this.queryLeave()
+                        }
+                    })
+                }
             });
         },
         handleDelete(index, row){

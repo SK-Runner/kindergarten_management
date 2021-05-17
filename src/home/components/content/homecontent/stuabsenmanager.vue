@@ -71,20 +71,20 @@
                 :modal-append-to-body="false"
             -->
             <el-dialog title="创建假条记录" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="insertForm">
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
+                <el-form :model="insertForm" :rules="Rules" ref="insertRules">
+                    <el-form-item label="学生ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
+                    <el-form-item label="学生姓名" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.studentname" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*班级ID" :label-width="formLabelWidth">
+                    <el-form-item label="班级ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假原因" :label-width="formLabelWidth">
+                    <el-form-item label="请假原因" :label-width="formLabelWidth" prop="cause">
                         <el-input v-model="insertForm.cause" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假时间" :label-width="formLabelWidth">
+                    <el-form-item label="请假时间" :label-width="formLabelWidth" prop="absendate">
                         <el-input v-model="insertForm.absendate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
                 </el-form>
@@ -104,23 +104,23 @@
             :modal-append-to-body="false"
         -->
             <el-dialog title="修改假条" :visible.sync="updateDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="updateForm">
-                    <el-form-item label="*请假单号" :label-width="formLabelWidth">
+                <el-form :model="updateForm" :rules="Rules" ref="updateRules">
+                    <el-form-item label="请假单号" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.absenteeismid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
+                    <el-form-item label="学生ID" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
+                    <el-form-item label="学生姓名" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.studentname" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*班级ID" :label-width="formLabelWidth">
+                    <el-form-item label="班级ID" :label-width="formLabelWidth">
                         <el-input v-model="updateForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0" readonly></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假原因" :label-width="formLabelWidth">
+                    <el-form-item label="请假原因" :label-width="formLabelWidth" prop="cause">
                         <el-input v-model="updateForm.cause" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假时间" :label-width="formLabelWidth">
+                    <el-form-item label="请假时间" :label-width="formLabelWidth" prop="absendate">
                         <el-input v-model="updateForm.absendate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
                 </el-form>
@@ -179,6 +179,14 @@ export default {
                 classid: '',
                 cause: '',
                 absendate: '',
+            },
+            Rules:{
+                cause:[
+                    { required: true, message: '请假原因必须填写', trigger: 'blur' }
+                ],
+                absendate:[
+                    { required: true, message: '请假时间必须选择', trigger: 'blur' }
+                ],
             },
 
             // 修改缴费信息模态框显示状态，默认false
@@ -308,50 +316,59 @@ export default {
 
         // 添加缴费记录方法
         addLeave(){
-            let data = {
-                studentid: parseInt(this.insertForm.studentid),
-                studentname: this.insertForm.studentname,
-                classid: parseInt(this.insertForm.classid),
-                cause:this.insertForm.cause,
-                absendate:this.insertForm.absendate,
-            }
-            createLeave(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("创建成功")
-                    this.insertDialogFormVisible = false
-                    this.queryLeave()
-                    this.insertForm.studentid = ''
-                    this.insertForm.studentname = ''
-                    this.insertForm.classid = ''
-                    this.insertForm.cause = ''
-                    this.insertForm.absendate = ''
-                }
-                else{
-                    alert("创建失败")
+            let that = this
+            this.$refs.insertRules.validate((valid)=>{
+                if(valid){
+                    let data = {
+                        studentid: parseInt(that.insertForm.studentid),
+                        studentname: that.insertForm.studentname,
+                        classid: parseInt(that.insertForm.classid),
+                        cause:that.insertForm.cause,
+                        absendate:that.insertForm.absendate,
+                    }
+                    createLeave(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("创建成功")
+                            that.insertDialogFormVisible = false
+                            that.queryLeave()
+                            that.insertForm.studentid = ''
+                            that.insertForm.studentname = ''
+                            that.insertForm.classid = ''
+                            that.insertForm.cause = ''
+                            that.insertForm.absendate = ''
+                        }else{
+                            alert("创建失败")
+                        }
+                    })
                 }
             })
         },
 
         // 编辑教师信息方法
         modifyLeave(){
-            let data = {
-                absenteeismid : parseInt(this.updateForm.absenteeismid),
-                studentid: parseInt(this.updateForm.studentid),
-                studentname: this.updateForm.studentname,
-                classid: parseInt(this.updateForm.classid),
-                cause:this.updateForm.cause,
-                absendate:this.updateForm.absendate,
-            }
-            updateLeave(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("修改成功")
-                    this.updateDialogFormVisible = false
-                    this.queryLeave()
-                }
-                else{
-                    alert("修改失败")
+            let that = this
+            this.$refs.updateRules.validate((valid)=>{
+                if(valid){
+                    let data = {
+                        absenteeismid : parseInt(that.updateForm.absenteeismid),
+                        studentid: parseInt(that.updateForm.studentid),
+                        studentname: that.updateForm.studentname,
+                        classid: parseInt(that.updateForm.classid),
+                        cause:that.updateForm.cause,
+                        absendate:that.updateForm.absendate,
+                    }
+                    updateLeave(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("修改成功")
+                            that.updateDialogFormVisible = false
+                            that.queryLeave()
+                        }
+                        else{
+                            alert("修改失败")
+                        }
+                    })
                 }
             })
         },
