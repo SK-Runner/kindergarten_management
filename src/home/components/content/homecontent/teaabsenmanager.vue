@@ -7,14 +7,18 @@
                 <span>请假记录表</span>
             </div>
             <div class="condition">
-                <el-autocomplete
-                    class="conditionitem"
-                    v-model="state2"
-                    :fetch-suggestions="querySearch"
-                    @select="HandleSelect"
-                    placeholder="学生姓名"
-                    >
-                </el-autocomplete>
+                <el-select 
+                v-model="studentid" 
+                placeholder="学生姓名"
+                class="conditionitem">
+                    <el-option
+                        v-for="item in studentList"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                        :disabled="item.disabled">
+                    </el-option>
+                </el-select>
                 <el-button class="conditionitem" @click="queryLeave">查询全部</el-button>
             </div>
             <div class="add-info">
@@ -48,8 +52,12 @@
                     <template slot-scope="scope">
                         <el-button
                         size="mini"
-                        @click="handleEdit(scope.$index, scope.row)" v-show="scope.row.status==0"
+                        @click="handleEdit(scope.$index, scope.row, '2')" v-show="scope.row.status==0"
                         style="margin-right: 10px">批准</el-button>
+                        <el-button
+                        size="mini"
+                        @click="handleEdit(scope.$index, scope.row, '1')" v-show="scope.row.status==0"
+                        style="margin-right: 10px">拒绝</el-button>
                         <el-button
                         size="mini"
                         type="danger"
@@ -79,29 +87,36 @@
                 :modal-append-to-body="false"
             -->
             <el-dialog title="创建假条记录" :visible.sync="insertDialogFormVisible" :modal-append-to-body="false">
-                <el-form :model="insertForm">
-                    <el-form-item label="*班级ID" :label-width="formLabelWidth">
+                <el-form :model="insertForm" :rules="insertRules" ref="insertRules">
+                    <el-form-item label="班级ID" :label-width="formLabelWidth">
                         <el-input v-model="insertForm.classid" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*班级名称" :label-width="formLabelWidth">
+                    <el-form-item label="班级名称" :label-width="formLabelWidth">
                         <el-input v-model="classname" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*学生姓名" :label-width="formLabelWidth">
-                        <el-autocomplete
-                            style="width:300px;position:absolute;left:0"
-                            v-model="state1"
-                            :fetch-suggestions="insertSearch"
-                            @select="insertHandleSelect"
-                            >
-                        </el-autocomplete>
+                    <el-form-item label="学生姓名" :label-width="formLabelWidth" prop="studentname">
+                        <el-select 
+                        v-model="insertForm.info" 
+                        placeholder="请选择"
+                        @change="stuChange"
+                        style="width:300px;position:absolute;left:0">
+                            <el-option
+                                v-for="item in studentList"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="{value:item.value,label:item.label}"
+                                :disabled="item.disabled"
+                                v-show="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="*学生ID" :label-width="formLabelWidth">
-                        <el-input v-model="insertForm.studentid" autocomplete="off" style="width:300px;position:absolute;left:0;"></el-input>
+                    <el-form-item label="学生ID" :label-width="formLabelWidth">
+                        <el-input v-model="insertForm.studentid" autocomplete="off" readonly style="width:300px;position:absolute;left:0;"></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假原因" :label-width="formLabelWidth">
+                    <el-form-item label="请假原因" :label-width="formLabelWidth" prop="cause">
                         <el-input v-model="insertForm.cause" autocomplete="off" style="width:300px;position:absolute;left:0"></el-input>
                     </el-form-item>
-                    <el-form-item label="*请假时间" :label-width="formLabelWidth">
+                    <el-form-item label="请假时间" :label-width="formLabelWidth" prop="absendate">
                         <el-input v-model="insertForm.absendate" autocomplete="off" style="width:300px;position:absolute;left:0" type="date"></el-input>
                     </el-form-item>
                 </el-form>
@@ -161,16 +176,27 @@ export default {
                 classid: '',
                 cause: '',
                 absendate: '',
+                info:{}
+            },
+            insertRules:{
+                studentname:[
+                    { required: true, message: '学生姓名不能为空', trigger: 'blur' }
+                ],
+                cause:[
+                    { required: true, message: '请假原因必须填写', trigger: 'blur' }
+                ],
+                absendate:[
+                    { required: true, message: '请假时间必须选择', trigger: 'blur' }
+                ],
             },
 
             studentList:[
                 {
-                    value:"无条件限制",
-                    id:''
+                    disabled:false,
+                    label:'',
+                    value:''
                 }
             ],
-            state1: '',
-            state2: '',
         }
     },
     mounted(){
@@ -192,32 +218,32 @@ export default {
                 console.log('加载全部：',this.dataList);
             })         
         }, 500);
-
         getstudent({
-            classid:this.classid,
+            classid:that.classid,
             pagenum:1,
             pagesize:100
         }).then(res=>{
             let arr = res.data.content
             arr.forEach(function(item){
                 let obj = {
-                    value:item.username,
-                    id:item.userid
+                    label:item.username,
+                    value:item.userid,
+                    disabled:item.userstatus==1?false:true
                 }
                 that.studentList.push(obj)
             })
         })
-
     },
     methods:{
         // handdle(row){
         //     console.log(row);
         // },
         // 编辑事件——打开dialog
-        handleEdit(index, row) {
+        handleEdit(index, row, status) {
             console.log(row.absenteeismid);
             let data = { 
-                absenteeismid:parseInt(row.absenteeismid)
+                absenteeismid:parseInt(row.absenteeismid),
+                status
             }
             this.$confirm('此操作将修改该记录, 是否继续?', '提示', {
                 confirmButtonText: '确定',
@@ -240,7 +266,6 @@ export default {
                 });
             });
         },
-
         handleDelete(index, row){
             console.log(row.absenteeismid);
             let data = { 
@@ -267,7 +292,6 @@ export default {
                 });
             });
         },
-
         handleCurrentChange(index){
             console.log(index);
             let data = {
@@ -283,7 +307,6 @@ export default {
                 console.log('条件查询的结果',this.dataList);
             });
         },
-
         // 条件查询缺席记录
         queryLeave(){
             let data = {
@@ -300,7 +323,6 @@ export default {
                 console.log('条件查询的结果',this.dataList);
             });
         },
-
         // 打开新增dialog
         insertDialogFormVisibleControl(){
             let that = this
@@ -312,60 +334,43 @@ export default {
                 that.insertDialogFormVisible = true
             })
         },
-
-        // 添加缴费记录方法
+        // 创建假条方法
         addLeave(){
-            let data = {
-                studentid: parseInt(this.insertForm.studentid),
-                studentname: this.insertForm.studentname,
-                classid: parseInt(this.insertForm.classid),
-                cause:this.insertForm.cause,
-                absendate:this.insertForm.absendate,
-            }
-            createLeave(data).then(res=>{
-                let result = res.data
-                if(result.code==200){
-                    alert("创建成功")
-                    this.insertDialogFormVisible = false
-                    this.queryLeave()
-                    this.insertForm.studentid = ''
-                    this.insertForm.studentname = ''
-                    this.insertForm.classid = ''
-                    this.insertForm.cause = ''
-                    this.insertForm.absendate = ''
-                }
-                else{
-                    alert("创建失败")
+            this.$refs.insertRules.validate((valid)=>{
+                if(valid){
+                    let data = {
+                        studentid: parseInt(this.insertForm.studentid),
+                        studentname: this.insertForm.studentname,
+                        classid: parseInt(this.insertForm.classid),
+                        cause:this.insertForm.cause,
+                        absendate:this.insertForm.absendate,
+                    }
+                    createLeave(data).then(res=>{
+                        let result = res.data
+                        if(result.code==200){
+                            alert("创建成功")
+                            this.insertDialogFormVisible = false
+                            this.queryLeave()
+                            this.insertForm.studentid = ''
+                            this.insertForm.studentname = ''
+                            this.insertForm.classid = ''
+                            this.insertForm.cause = ''
+                            this.insertForm.absendate = ''
+                            this.insertForm.info = {}
+                        }
+                        else{
+                            alert("创建失败")
+                        }
+                    })
+                }else{
+                    return false
                 }
             })
         },
-
-        insertSearch(queryString, cb) {
-            var studentList = this.studentList;
-            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
+        stuChange(param){
+            this.insertForm.studentname = param.label
+            this.insertForm.studentid = param.value
         },
-        createFilter(queryString) {
-            return (studentList) => {
-            return (studentList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-            };
-        },
-        insertHandleSelect(item) {
-            console.log(item);
-            this.insertForm.studentid = item.id
-        },
-        querySearch(queryString, cb) {
-            var studentList = this.studentList;
-            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        HandleSelect(item) {
-            console.log(item);
-            this.studentid = item.id
-        }
-
     }
 }
 </script>
