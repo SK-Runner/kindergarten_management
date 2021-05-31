@@ -7,7 +7,7 @@ export function queryallcla(data){
         data:data,
         headers:{
             'content-type':'application/json'
-        },
+        }, 
         method:'post',
         
     })
