@@ -32,6 +32,7 @@
                     </el-option>
                 </el-select>
                 <el-select v-model="payname" placeholder="缴费名称" class="conditionitem">
+                    <el-option label="请选择缴费项" value=""></el-option>
                     <el-option label="保教费" value="保教费"></el-option>
                     <el-option label="生活费" value="生活费"></el-option>
                 </el-select>
@@ -486,75 +487,8 @@ export default {
             value: [],
             options: [{
                 value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },],
+                label: '缴费季度'
+            }],
             startime:'',
             endtime:'',
 
@@ -568,17 +502,11 @@ export default {
                     disabled:false
                 }
             ],
-            state1: '',
-            state2: '',
-            state3: '',
-            state4: '',
-            state5: '',
-            state6: '',
             studentList:[], //增加缴费记录的学生列表
             studentList2:[
                 {
                     value:"",
-                    label:'',
+                    label:'请选择学生',
                     disabled:false
                 }
             ],//搜索缴费记录的学生列表
@@ -589,13 +517,20 @@ export default {
         this.classes = this.loadAll();
         // 动态设置学期起始和结束时间
         let now = new Date()
-        for(let i = 3,j=0 ; i > -4 ; i--,j++){
-            this.options[j].value = now.getFullYear()+i
-            this.options[j].label = now.getFullYear()+i
-            this.options[j].children[0].value = (this.options[j].value).toString() + '-03' + ' ' + this.options[j].value.toString() + '-08'
-            this.options[j].children[0].label = '春季'
-            this.options[j].children[1].value = this.options[j].value.toString() + '-09' + ' ' + (this.options[j].value+1).toString() + '-02'
-            this.options[j].children[1].label = '秋季'
+        for(let i = now.getFullYear(),j=1 ; i >= 2017 ; i--,j++){
+            console.log(i,',',j);
+            let obj = {
+                value: i,
+                label: i,
+                children: [{
+                    value: i.toString()+'-03' + ' ' + i.toString() + '-08',
+                    label: '春季',
+                },{
+                    value: i.toString()+'-09' + ' ' + (i+1).toString() + '-02',
+                    label: '秋季',
+                },]
+            }
+            this.options.push(obj)
         }
 
         // 加载全部数据
@@ -890,7 +825,7 @@ export default {
         let data = [
             {
                 value:'',
-                label:'',
+                label:'请选择班级',
                 disabled:false
             }
         ]
@@ -919,75 +854,6 @@ export default {
             console.log('学生列表变化的value',param);
             this.updateForm.studentid = param.value
             this.updateForm.studentname = param.name
-        },
-
-        studentQuerySearch(queryString, cb){
-            var studentList = this.studentList2;
-            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        studentHandleSelect(item){
-            console.log(item);
-            this.studentid = item.id
-        },
-        querySearch(queryString, cb) {
-            var classes = this.classes;
-            var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        handleSelect(item) {
-            console.log(item);
-            this.classid = item.id
-        },
-
-        insertSearch(queryString, cb) {
-            var classes = this.classes;
-            var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        insertHandleSelect(item) {
-            console.log(item);
-            this.insertForm.classid = item.id
-            this.getStudentFun('insert')
-        },
-
-        insertStudentSearch(queryString, cb) {
-            var studentList = this.studentList;
-            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        insertStudentHandleSelect(item) {
-            console.log(item);
-            this.insertForm.studentid = item.id
-            this.insertForm.studentname = item.value
-        },
-
-        updateSearch(queryString, cb) {
-            var classes = this.classes;
-            var results = queryString ? classes.filter(this.createFilter(queryString)) : classes;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        updateHandleSelect(item) {
-            console.log(item);
-            this.updateForm.classid = item.id
-            this.getStudentFun('update')
-        },
-
-        updateStudentSearch(queryString, cb) {
-            var studentList = this.studentList;
-            var results = queryString ? studentList.filter(this.createFilter(queryString)) : studentList;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        updateStudentHandleSelect(item) {
-            console.log(item);
-            this.updateForm.studentid = item.id
-            this.updateForm.studentname = item.value
         },
 
         getStudentFun(type){
@@ -1104,7 +970,7 @@ export default {
     }
     .conditionitem{
         margin-right: 18px;
-        width: 120px;
+        width: 133px;
     }
     .block{
         position: absolute;

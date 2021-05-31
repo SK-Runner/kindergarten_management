@@ -8,6 +8,7 @@
             </div>
             <div class="condition">
                 <el-select v-model="payname" placeholder="缴费名称" class="conditionitem">
+                    <el-option label="请选择缴费项" value=""></el-option>
                     <el-option label="保教费" value="保教费"></el-option>
                     <el-option label="生活费" value="生活费"></el-option>
                 </el-select>
@@ -106,75 +107,8 @@ export default {
             value: [],
             options: [{
                 value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },{
-                value: '',
-                label: '',
-                children: [{
-                    value: '',
-                    label: '',
-                },{
-                    value: '',
-                    label: '',
-                },]
-            },],
+                label: '缴费季度'
+            }],
             startime:'',
             endtime:'',
 
@@ -185,13 +119,20 @@ export default {
     mounted(){
         // 动态设置学期起始和结束时间
         let now = new Date()
-        for(let i = 3,j=0 ; i > -4 ; i--,j++){
-            this.options[j].value = now.getFullYear()+i
-            this.options[j].label = now.getFullYear()+i
-            this.options[j].children[0].value = (this.options[j].value).toString() + '-03' + ' ' + this.options[j].value.toString() + '-08'
-            this.options[j].children[0].label = '春季'
-            this.options[j].children[1].value = this.options[j].value.toString() + '-09' + ' ' + (this.options[j].value+1).toString() + '-02'
-            this.options[j].children[1].label = '秋季'
+        for(let i = now.getFullYear(),j=1 ; i >= 2017 ; i--,j++){
+            console.log(i,',',j);
+            let obj = {
+                value: i,
+                label: i,
+                children: [{
+                    value: i.toString()+'-03' + ' ' + i.toString() + '-08',
+                    label: '春季',
+                },{
+                    value: i.toString()+'-09' + ' ' + (i+1).toString() + '-02',
+                    label: '秋季',
+                },]
+            }
+            this.options.push(obj)
         }
         let userInfo = JSON.parse(window.sessionStorage.getItem('userInfo'));
         this.classid=userInfo.classid   
@@ -330,7 +271,7 @@ export default {
     }
     .conditionitem{
         margin-right: 18px;
-        width: 120px;
+        width: 136px;
     }
     .block{
         position: absolute;

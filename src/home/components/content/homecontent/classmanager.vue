@@ -180,6 +180,9 @@ export default {
             },
             dataList:[],
             grade: [{
+                value: '',
+                label: '请选择年级'
+            },{
                 value: 0,
                 label: '小班'
             }, {
@@ -191,6 +194,9 @@ export default {
             }],
 
             validclass: [{
+                value: '',
+                label: '请选择状态'
+            },{
                 value: 0,
                 label: '未开班'
             }, {
@@ -488,7 +494,7 @@ export default {
     }
     .conditionitem{
         margin-right: 18px;
-        width: 120px;
+        width: 130px;
     }
     .block{
         position: absolute;

@@ -43,6 +43,7 @@
             style="width: 100%">
                 <el-table-column prop="userid" label="学生ID"></el-table-column>
                 <el-table-column prop="username" label="学生姓名"></el-table-column>
+                <el-table-column prop="phone" label="联系方式"></el-table-column>
                 <el-table-column prop="classid" label="班级ID"></el-table-column>
                 <el-table-column prop="classname" label="班级名称"></el-table-column>
                 <el-table-column prop="userstatus" label="账号状态">
@@ -205,6 +206,9 @@ export default {
 
             userstatus: '',
             userstatusitem: [{
+                value: "",
+                label: '请选择状态'
+            },{
                 value: 0,
                 label: '无效'
             }, {
@@ -450,7 +454,7 @@ export default {
         let data = [
             {
                 value:'',
-                label:'',
+                label:'请选择班级',
                 disabled:false
             }
         ]
@@ -532,7 +536,7 @@ export default {
     }
     .conditionitem{
         margin-right: 18px;
-        width: 120px;
+        width: 130px;
     }
     .block{
         position: absolute;

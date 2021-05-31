@@ -188,7 +188,7 @@ export default {
             studentList:[
                 {
                     disabled:false,
-                    label:'',
+                    label:'请选择学生',
                     value:''
                 }
             ],
@@ -197,13 +197,15 @@ export default {
     mounted(){
         let that = this
         let userInfo = JSON.parse(window.sessionStorage.getItem('userInfo'));
-        this.classid=userInfo.classid   
+        this.classid=userInfo.classid
+        console.log(this.classid);
         // 加载全部数据
         let data = {
             pagenum:this.currentPage1,
             pagesize:this.pagesize,
             classid:parseInt(this.classid)
         }
+
         setTimeout(() => {
             queryLeave(data).then(res=>{
                 let result = res.data
@@ -302,7 +304,7 @@ export default {
             let data = {
                 pagenum:this.currentPage1,
                 pagesize:this.pagesize,
-                studentid:parseInt(this.studentid),
+                classid:parseInt(this.classid),
             }
             queryLeave(data).then(res=>{
                 let data = res.data
@@ -426,7 +428,7 @@ export default {
     }
     .conditionitem{
         margin-right: 18px;
-        width: 120px;
+        width: 130px;
     }
     .block{
         position: absolute;
